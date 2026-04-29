@@ -17,8 +17,8 @@ RUN npm run build -- --configuration production
 # Stage 2: Serve the application with Nginx
 FROM nginx:alpine
 
-# Copy custom nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Serve with default nginx config
+# Since you have Nginx on the host, you can handle routing there if needed.
 
 # Copy the build output from the build stage to the nginx html directory
 # Angular 17+ uses dist/<project-name>/browser
