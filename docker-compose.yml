@@ -1,0 +1,12 @@
+services:
+  workflow-view:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: workflow-view
+    ports:
+      - "80:80"
+    restart: always
+    # Uncomment if you want to use environment variables at runtime
+    # env_file:
+    #   - .env

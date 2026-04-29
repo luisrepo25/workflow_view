@@ -1,0 +1,13 @@
+node_modules
+dist
+.git
+.gitignore
+.editorconfig
+README.md
+Dockerfile
+docker-compose.yml
+.env
+.env.example
+.angular
+npm-debug.log
+proxy.conf.json

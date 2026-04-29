@@ -1,0 +1,120 @@
+/* Responsive Design */
+
+/* Breakpoints */
+/* 
+  xs: 0px
+  sm: 640px
+  md: 768px
+  lg: 1024px
+  xl: 1280px
+  2xl: 1536px
+*/
+
+/* Mobile First (default styles are for mobile) */
+
+/* Small devices (landscape phones) */
+@media (min-width: 640px) {
+  body {
+    font-size: 1rem;
+  }
+}
+
+/* Medium devices (tablets) */
+@media (min-width: 768px) {
+  body {
+    font-size: 1rem;
+  }
+
+  .container {
+    max-width: 768px;
+    margin: 0 auto;
+  }
+}
+
+/* Large devices (desktops) */
+@media (min-width: 1024px) {
+  .container {
+    max-width: 1024px;
+  }
+}
+
+/* Extra large devices (large desktops) */
+@media (min-width: 1280px) {
+  .container {
+    max-width: 1280px;
+  }
+}
+
+/* 2xl devices */
+@media (min-width: 1536px) {
+  .container {
+    max-width: 1536px;
+  }
+}
+
+/* Dark mode support (optional) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --gray-50: #1f2937;
+    --gray-100: #111827;
+    --gray-900: #f9fafb;
+  }
+
+  body {
+    background: #111827;
+    color: #f9fafb;
+  }
+
+  input,
+  select,
+  textarea {
+    background: #1f2937;
+    color: #f9fafb;
+    border-color: #374151;
+  }
+
+  th {
+    background: #1f2937;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Print styles */
+@media print {
+  html,
+  body {
+    height: auto;
+  }
+
+  body {
+    background: white;
+    color: black;
+  }
+
+  button,
+  nav,
+  .no-print {
+    display: none !important;
+  }
+
+  a {
+    text-decoration: underline;
+  }
+
+  table {
+    border-collapse: collapse;
+  }
+
+  th,
+  td {
+    border: 1px solid black;
+  }
+}
