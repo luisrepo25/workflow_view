@@ -1,11 +1,11 @@
-# This config was automatically generated from your source code
-# Stacks detected: deps:node:.
+# Pipeline CI/CD para workflow-view
+# Despliegue automatico a EC2 via Docker
 version: 2.1
 orbs:
   node: circleci/node@5
+
 jobs:
-  test-node:
-    # Install node dependencies and run tests
+  test:
     executor: node/default
     steps:
       - checkout
@@ -13,42 +13,62 @@ jobs:
           pkg-manager: npm
       - run:
           name: Run tests
-          command: npm test --passWithNoTests
-  build-node:
-    # Build node project
-    executor: node/default
+          command: npm test -- --passWithNoTests
+
+  build-and-deploy:
+    machine:
+      image: ubuntu-2004:2024.07.1
     steps:
       - checkout
-      - node/install-packages:
-          pkg-manager: npm
+
+      # 1. Construir la imagen Docker
       - run:
-          command: npm run build
+          name: Build Docker image
+          command: |
+            docker build -t workflow-view:latest .
+
+      # 2. Comprimir la imagen para transferencia
       - run:
-          name: Create the ~/artifacts directory if it doesn't exist
-          command: mkdir -p ~/artifacts
-      # Copy output to artifacts dir
+          name: Save Docker image as tar.gz
+          command: |
+            mkdir -p /tmp/docker-images
+            docker save workflow-view:latest | gzip > /tmp/docker-images/workflow-view.tar.gz
+
+      # 3. Agregar la llave SSH para EC2
+      - add_ssh_keys:
+          fingerprints:
+            - "SHA256:cJ1W+1/OBU6rnqDS0vp3SCQz2Z1APBroMXuEFRCNlCk"
+
+      # 4. Copiar la imagen a EC2 via SCP
       - run:
-          name: Copy artifacts
-          command: cp -R build dist public .output .next .docusaurus ~/artifacts 2>/dev/null || true
-      - store_artifacts:
-          path: ~/artifacts
-          destination: node-build
-  deploy:
-    # This is an example deploy job, not actually used by the workflow
-    docker:
-      - image: cimg/base:stable
-    steps:
-      # Replace this with steps to deploy to users
+          name: Copy Docker image to EC2
+          command: |
+            scp -o StrictHostKeyChecking=no \
+                /tmp/docker-images/workflow-view.tar.gz \
+                ${EC2_USER}@${EC2_IP}:~/workflow-view.tar.gz
+
+      # 5. Desplegar en EC2: cargar imagen y reiniciar contenedor
       - run:
-          name: deploy
-          command: '#e.g. ./deploy.sh'
+          name: Deploy on EC2
+          command: |
+            ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_IP} "
+              docker load < ~/workflow-view.tar.gz &&
+              docker stop workflow-view || true &&
+              docker rm workflow-view || true &&
+              docker run -d \
+                --name workflow-view \
+                -p 8081:80 \
+                --restart always \
+                workflow-view:latest
+            "
+
 workflows:
-  build-and-test:
+  build-and-deploy:
     jobs:
-      - test-node
-      - build-node:
+      - test
+      - build-and-deploy:
           requires:
-            - test-node
-    # - deploy:
-    #     requires:
-    #       - build-node
+            - test
+          filters:
+            branches:
+              only: main
