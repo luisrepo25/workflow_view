@@ -13,7 +13,7 @@ jobs:
           pkg-manager: npm
       - run:
           name: Run tests
-          command: npm test -- --passWithNoTests
+          command: npm test -- --watch=false
 
   build-and-deploy:
     machine:

@@ -12,7 +12,7 @@ import { AuthService } from '../../../core/services/auth.service';
   template: `
     <div class="auth-container">
       <div class="auth-form">
-        <h1>Iniciar Sesión</h1>
+        <h1>Iniciar Sesión UwU</h1>
         
         <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
           <div class="form-group">
