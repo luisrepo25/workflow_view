@@ -1,12 +1,13 @@
-# Pipeline CI/CD para workflow-view
-# Despliegue automatico a EC2 via Docker
 version: 2.1
+
 orbs:
-  node: circleci/node@5
+  node: circleci/node@7.1.0
 
 jobs:
+  # ── Test ──────────────────────────────────
   test:
-    executor: node/default
+    docker:
+      - image: cimg/node:22.14
     steps:
       - checkout
       - node/install-packages:
@@ -15,51 +16,32 @@ jobs:
           name: Run tests
           command: npm test -- --watch=false
 
+  # ── Build & Deploy to EC2 ─────────────────
   build-and-deploy:
-    machine:
-      image: ubuntu-2204:2025.04.1
+    docker:
+      - image: cimg/base:current
     steps:
-      - checkout
-
-      # 1. Construir la imagen Docker
-      - run:
-          name: Build Docker image
-          command: |
-            docker build -t workflow-view:latest .
-
-      # 2. Comprimir la imagen para transferencia
-      - run:
-          name: Save Docker image as tar.gz
-          command: |
-            mkdir -p /tmp/docker-images
-            docker save workflow-view:latest | gzip > /tmp/docker-images/workflow-view.tar.gz
-
-      # 3. Agregar la llave SSH para EC2
       - add_ssh_keys:
           fingerprints:
             - "SHA256:cJ1W+1/OBU6rnqDS0vp3SCQz2Z1APBroMXuEFRCNlCk"
 
-      # 4. Copiar la imagen a EC2 via SCP
       - run:
-          name: Copy Docker image to EC2
+          name: Deploy to AWS EC2
           command: |
-            scp -o StrictHostKeyChecking=no \
-                /tmp/docker-images/workflow-view.tar.gz \
-                ${EC2_USER}@${EC2_IP}:~/workflow-view.tar.gz
+            echo "Conectando a ${EC2_USER}@${EC2_IP} ..."
+            ssh -o StrictHostKeyChecking=no "${EC2_USER}@${EC2_IP}" "
+              set -e
+              echo 'Cambiando al directorio del proyecto...'
+              cd ~/workflow_view
 
-      # 5. Desplegar en EC2: cargar imagen y reiniciar contenedor
-      - run:
-          name: Deploy on EC2
-          command: |
-            ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_IP} "
-              docker load < ~/workflow-view.tar.gz &&
-              docker stop workflow-view || true &&
-              docker rm workflow-view || true &&
-              docker run -d \
-                --name workflow-view \
-                -p 8081:80 \
-                --restart always \
-                workflow-view:latest
+              echo 'Obtenendo ultimos cambios...'
+              git pull origin main
+
+              echo 'Reconstruyendo y reiniciando contenedores...'
+              docker compose down
+              docker compose up -d --build
+
+              echo 'Deploy completado exitosamente!'
             "
 
 workflows:
