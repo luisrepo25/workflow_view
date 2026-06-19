@@ -72,5 +72,5 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./features/workflow-editor/components/notifications-center/notifications-center.component').then(m => m.NotificationsCenterComponent)
   },
-  { path: '**', redirectTo: '/dashboard' }
+  { path: '**', redirectTo: '/auth/login' }
 ];

@@ -17,9 +17,6 @@ RUN npm run build -- --configuration production
 # Stage 2: Serve the application with Nginx
 FROM nginx:alpine
 
-# Serve with default nginx config
-# Since you have Nginx on the host, you can handle routing there if needed.
-
 # Copy the build output from the build stage to the nginx html directory
 # Angular 17+ uses dist/<project-name>/browser
 COPY --from=build /app/dist/workflow_view/browser /usr/share/nginx/html
